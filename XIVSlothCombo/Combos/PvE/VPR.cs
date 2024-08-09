@@ -991,162 +991,192 @@ namespace XIVSlothCombo.Combos.PvE
                             return OriginalHook(Twinblood);
                     }
 
-                    // Vicewinder Combo
-                    if (LevelChecked(Vicewinder))
+                    if (positionalChoice is 0)
                     {
-                        // Swiftskin's Coil
-                        if ((VicewinderReady && (!OnTargetsFlank() || !TargetNeedsPositionals())) || HuntersCoilReady)
-                            return SwiftskinsCoil;
+                        if (SwiftskinsCoilReady)
+                        {
+                            if (IsEnabled(CustomComboPreset.VPR_VicewinderCoilsTN) &&
+                                    trueNorthReady && !OnTargetsFlank())
+                                return All.TrueNorth;
 
-                        // Hunter's Coil
-                        if ((VicewinderReady && (!OnTargetsRear() || !TargetNeedsPositionals())) || SwiftskinsCoilReady)
                             return HuntersCoil;
+                        }
+
+                        if (VicewinderReady)
+                        {
+                            if (IsEnabled(CustomComboPreset.VPR_VicewinderCoilsTN) &&
+                                trueNorthReady && !OnTargetsRear())
+                                return All.TrueNorth;
+                            return SwiftskinsCoil;
+                        }
                     }
-                }
-                return actionID;
-            }
-        }
 
-        internal class VPR_VicepitDens : CustomCombo
-        {
-            protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_VicepitDens;
-
-            protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
-            {
-                VPRGauge? gauge = GetJobGauge<VPRGauge>();
-                bool VicepitReady = gauge.DreadCombo == DreadCombo.PitOfDread;
-                bool SwiftskinsDenReady = gauge.DreadCombo == DreadCombo.SwiftskinsDen;
-
-                if (actionID is Vicepit)
-                {
-                    if (IsEnabled(CustomComboPreset.VPR_VicepitDens_oGCDs))
+                    if (positionalChoice is 1)
                     {
+                        if (HuntersCoilReady)
+                        {
+                            if (IsEnabled(CustomComboPreset.VPR_VicewinderCoilsTN) &&
+                                trueNorthReady && !OnTargetsRear())
+                                return All.TrueNorth;
+                            return SwiftskinsCoil;
+                        }
+
+                        if (VicewinderReady)
+                        {
+                            if (IsEnabled(CustomComboPreset.VPR_VicewinderCoilsTN) &&
+                                    trueNorthReady && !OnTargetsFlank() && HasEffect(Buffs.FlankstungVenom))
+                                return All.TrueNorth;
+
+                            // Hunter's Coil
+                            if ((VicewinderReady && (!OnTargetsRear() || !TargetNeedsPositionals())) || SwiftskinsCoilReady)
+                                return HuntersCoil;
+                        }
+                    }
+                    return actionID;
+                }
+            }
+
+            internal class VPR_VicepitDens : CustomCombo
+            {
+                protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_VicepitDens;
+
+                protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
+                {
+                    VPRGauge? gauge = GetJobGauge<VPRGauge>();
+                    bool VicepitReady = gauge.DreadCombo == DreadCombo.PitOfDread;
+                    bool SwiftskinsDenReady = gauge.DreadCombo == DreadCombo.SwiftskinsDen;
+
+                    if (actionID is Vicepit)
+                    {
+                        if (IsEnabled(CustomComboPreset.VPR_VicepitDens_oGCDs))
+                        {
+                            if (HasEffect(Buffs.FellhuntersVenom))
+                                return OriginalHook(Twinfang);
+
+                            if (HasEffect(Buffs.FellskinsVenom))
+                                return OriginalHook(Twinblood);
+                        }
+
+                        if (SwiftskinsDenReady)
+                            return HuntersDen;
+
+                        if (VicepitReady)
+                            return SwiftskinsDen;
+                    }
+                    return actionID;
+                }
+            }
+
+            internal class VPR_UncoiledTwins : CustomCombo
+            {
+                protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_UncoiledTwins;
+
+                protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
+                {
+                    if (actionID is UncoiledFury)
+                    {
+                        if (HasEffect(Buffs.PoisedForTwinfang))
+                            return OriginalHook(Twinfang);
+
+                        if (HasEffect(Buffs.PoisedForTwinblood))
+                            return OriginalHook(Twinblood);
+                    }
+                    return actionID;
+                }
+            }
+
+            internal class VPR_ReawakenLegacy : CustomCombo
+            {
+                protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_ReawakenLegacy;
+
+                protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
+                {
+                    VPRGauge? gauge = GetJobGauge<VPRGauge>();
+                    int buttonChoice = Config.VPR_ReawakenLegacyButton;
+
+                    if ((buttonChoice is 0 && actionID is Reawaken && HasEffect(Buffs.Reawakened)) ||
+                        (buttonChoice is 1 && actionID is SteelFangs && HasEffect(Buffs.Reawakened)))
+                    {
+                        // Legacy Weaves
+                        if (IsEnabled(CustomComboPreset.VPR_ReawakenLegacyWeaves) &&
+                            TraitLevelChecked(Traits.SerpentsLegacy) && HasEffect(Buffs.Reawakened)
+                            && OriginalHook(SerpentsTail) is not SerpentsTail)
+                            return OriginalHook(SerpentsTail);
+
+                        if (!TraitLevelChecked(Traits.EnhancedSerpentsLineage))
+                        {
+                            if (gauge.AnguineTribute is 4)
+                                return OriginalHook(SteelFangs);
+
+                            if (gauge.AnguineTribute is 3)
+                                return OriginalHook(ReavingFangs);
+
+                            if (gauge.AnguineTribute is 2)
+                                return OriginalHook(HuntersCoil);
+
+                            if (gauge.AnguineTribute is 1)
+                                return OriginalHook(SwiftskinsCoil);
+                        }
+
+                        if (TraitLevelChecked(Traits.EnhancedSerpentsLineage))
+                        {
+                            if (gauge.AnguineTribute is 5)
+                                return OriginalHook(SteelFangs);
+
+                            if (gauge.AnguineTribute is 4)
+                                return OriginalHook(ReavingFangs);
+
+                            if (gauge.AnguineTribute is 3)
+                                return OriginalHook(HuntersCoil);
+
+                            if (gauge.AnguineTribute is 2)
+                                return OriginalHook(SwiftskinsCoil);
+
+                            if (gauge.AnguineTribute is 1)
+                                return OriginalHook(Reawaken);
+                        }
+                    }
+                    return actionID;
+                }
+            }
+
+            internal class VPR_TwinTails : CustomCombo
+            {
+                protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_TwinTails;
+                protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
+                {
+                    if (actionID is SerpentsTail)
+                    {
+                        // Death Rattle
+                        if (LevelChecked(SerpentsTail) && OriginalHook(SerpentsTail) is DeathRattle)
+                            return OriginalHook(SerpentsTail);
+
+                        // Legacy Weaves
+                        if (TraitLevelChecked(Traits.SerpentsLegacy) && HasEffect(Buffs.Reawakened)
+                            && OriginalHook(SerpentsTail) is not SerpentsTail)
+                            return OriginalHook(SerpentsTail);
+
+                        if (HasEffect(Buffs.PoisedForTwinfang))
+                            return OriginalHook(Twinfang);
+
+                        if (HasEffect(Buffs.PoisedForTwinblood))
+                            return OriginalHook(Twinblood);
+
+                        if (HasEffect(Buffs.HuntersVenom))
+                            return OriginalHook(Twinfang);
+
+                        if (HasEffect(Buffs.SwiftskinsVenom))
+                            return OriginalHook(Twinblood);
+
                         if (HasEffect(Buffs.FellhuntersVenom))
                             return OriginalHook(Twinfang);
 
                         if (HasEffect(Buffs.FellskinsVenom))
                             return OriginalHook(Twinblood);
+
                     }
-
-                    if (SwiftskinsDenReady)
-                        return HuntersDen;
-
-                    if (VicepitReady)
-                        return SwiftskinsDen;
+                    return actionID;
                 }
-                return actionID;
-            }
-        }
-
-        internal class VPR_UncoiledTwins : CustomCombo
-        {
-            protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_UncoiledTwins;
-
-            protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
-            {
-                if (actionID is UncoiledFury)
-                {
-                    if (HasEffect(Buffs.PoisedForTwinfang))
-                        return OriginalHook(Twinfang);
-
-                    if (HasEffect(Buffs.PoisedForTwinblood))
-                        return OriginalHook(Twinblood);
-                }
-                return actionID;
-            }
-        }
-
-        internal class VPR_ReawakenLegacy : CustomCombo
-        {
-            protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_ReawakenLegacy;
-
-            protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
-            {
-                VPRGauge? gauge = GetJobGauge<VPRGauge>();
-                int buttonChoice = Config.VPR_ReawakenLegacyButton;
-
-                if ((buttonChoice is 0 && actionID is Reawaken && HasEffect(Buffs.Reawakened)) ||
-                    (buttonChoice is 1 && actionID is SteelFangs && HasEffect(Buffs.Reawakened)))
-                {
-                    // Legacy Weaves
-                    if (IsEnabled(CustomComboPreset.VPR_ReawakenLegacyWeaves) &&
-                        TraitLevelChecked(Traits.SerpentsLegacy) && HasEffect(Buffs.Reawakened)
-                        && OriginalHook(SerpentsTail) is not SerpentsTail)
-                        return OriginalHook(SerpentsTail);
-
-                    if (!TraitLevelChecked(Traits.EnhancedSerpentsLineage))
-                    {
-                        if (gauge.AnguineTribute is 4)
-                            return OriginalHook(SteelFangs);
-
-                        if (gauge.AnguineTribute is 3)
-                            return OriginalHook(ReavingFangs);
-
-                        if (gauge.AnguineTribute is 2)
-                            return OriginalHook(HuntersCoil);
-
-                        if (gauge.AnguineTribute is 1)
-                            return OriginalHook(SwiftskinsCoil);
-                    }
-
-                    if (TraitLevelChecked(Traits.EnhancedSerpentsLineage))
-                    {
-                        if (gauge.AnguineTribute is 5)
-                            return OriginalHook(SteelFangs);
-
-                        if (gauge.AnguineTribute is 4)
-                            return OriginalHook(ReavingFangs);
-
-                        if (gauge.AnguineTribute is 3)
-                            return OriginalHook(HuntersCoil);
-
-                        if (gauge.AnguineTribute is 2)
-                            return OriginalHook(SwiftskinsCoil);
-
-                        if (gauge.AnguineTribute is 1)
-                            return OriginalHook(Reawaken);
-                    }
-                }
-                return actionID;
-            }
-        }
-
-        internal class VPR_TwinTails : CustomCombo
-        {
-            protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.VPR_TwinTails;
-            protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
-            {
-                if (actionID is SerpentsTail)
-                {
-                    // Death Rattle
-                    if (LevelChecked(SerpentsTail) && OriginalHook(SerpentsTail) is DeathRattle)
-                        return OriginalHook(SerpentsTail);
-
-                    // Legacy Weaves
-                    if (TraitLevelChecked(Traits.SerpentsLegacy) && HasEffect(Buffs.Reawakened)
-                        && OriginalHook(SerpentsTail) is not SerpentsTail)
-                        return OriginalHook(SerpentsTail);
-
-                    if (HasEffect(Buffs.PoisedForTwinfang))
-                        return OriginalHook(Twinfang);
-
-                    if (HasEffect(Buffs.PoisedForTwinblood))
-                        return OriginalHook(Twinblood);
-
-                    if (HasEffect(Buffs.HuntersVenom))
-                        return OriginalHook(Twinfang);
-
-                    if (HasEffect(Buffs.SwiftskinsVenom))
-                        return OriginalHook(Twinblood);
-
-                    if (HasEffect(Buffs.FellhuntersVenom))
-                        return OriginalHook(Twinfang);
-
-                    if (HasEffect(Buffs.FellskinsVenom))
-                        return OriginalHook(Twinblood);
-
-                }
-                return actionID;
             }
         }
     }
